@@ -30,12 +30,15 @@ func main() {
 	collector.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: 8})
 
 	// Find and visit all links on ems.press pages
-	collector.OnHTML("a[href]", func(element *colly.HTMLElement) {
+	collector.OnHTML("a[href], img[src], video[src]", func(element *colly.HTMLElement) {
 		url := element.Request.URL
 
 		if url.Host == "ems.press" {
-			element.Request.Ctx.Put(element.Attr("href"), url.String())
-			element.Request.Visit(element.Attr("href"))
+			if src := element.Attr("src"); src != "" {
+				element.Request.Visit(src)
+			} else {
+				element.Request.Visit(element.Attr("href"))
+			}
 		}
 	})
 
@@ -64,6 +67,10 @@ func main() {
 		}
 	})
 
+	collector.OnResponse(func(response *colly.Response) {
+		fmt.Printf("Checked %s\n", response.Request.URL)
+	})
+
 	collector.OnError(func(response *colly.Response, err error) {
 		if response.StatusCode == 503 || response.StatusCode == 999 || response.StatusCode == 0 {
 			// ignore 503 and 999 and 0 status code to avoid flaky errors
@@ -71,16 +78,8 @@ func main() {
 		}
 
 		exitCode = 1
-		fmt.Println(
-			"Error Visiting:\n",
-			response.Request.URL,
-			"\n",
-			err,
-			response.StatusCode,
-			"\n Found on:",
-			response.Ctx.Get(response.Request.URL.String()),
-			"\n ",
-		)
+		request := response.Request
+		fmt.Fprintf(os.Stderr, "Error: \"%v %s\" while visiting %s; Found on: %s\n", response.StatusCode, err, request.URL, request.Headers.Get("Referer"))
 	})
 
 	collector.Visit("https://ems.press/")
