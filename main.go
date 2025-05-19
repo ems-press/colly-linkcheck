@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/gocolly/colly/v2"
+	"github.com/gocolly/colly/v2/extensions"
 )
 
 func matchAny(urlPath string, patterns []string) bool {
@@ -28,6 +29,8 @@ func main() {
 
 	collector := colly.NewCollector(colly.Async())
 	collector.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: 8})
+
+	extensions.Referer(collector)
 
 	// Find and visit all links on ems.press pages
 	collector.OnHTML("a[href], img[src], video[src]", func(element *colly.HTMLElement) {
