@@ -27,7 +27,10 @@ func main() {
 		os.Exit(exitCode)
 	}()
 
-	collector := colly.NewCollector(colly.Async())
+	collector := colly.NewCollector(
+		colly.Async(),
+		colly.UserAgent("EMS Press Linkcheck Bot (+https://ems.press)"),
+	)
 	collector.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: 8})
 
 	extensions.Referer(collector)
