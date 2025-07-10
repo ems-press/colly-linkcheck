@@ -85,7 +85,7 @@ func main() {
 
 		exitCode = 1
 		request := response.Request
-		fmt.Fprintf(os.Stderr, "Error: \"%v %s\" while visiting %s; Found on: %s\n", response.StatusCode, err, request.URL, request.Headers.Get("Referer"))
+		fmt.Fprintf(os.Stderr, "Error: \"%v %s\" while visiting %s (Found on: %s)\n", response.StatusCode, err, request.URL, request.Headers.Get("Referer"))
 	})
 
 	collector.Visit("https://ems.press/")
